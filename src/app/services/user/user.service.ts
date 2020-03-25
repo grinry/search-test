@@ -1,14 +1,22 @@
 import { Injectable } from '@angular/core';
-import { User } from 'src/app/models/user';
 import { Observable } from 'rxjs';
 import { UserRepository } from '@search-app/data';
+import { map } from 'rxjs/operators';
+import { SearchResult } from '../../models/search-result';
+import { SearchServiceInterface } from '../../interfaces/search-service.interface';
 
-@Injectable({ providedIn: 'root' })
-export class UserService {
+@Injectable({providedIn: 'root'})
+export class UserService implements SearchServiceInterface {
 
-  constructor(private repo: UserRepository) { }
+  constructor(private repo: UserRepository) {
+  }
 
-  search$(query: string): Observable<User[]> {
-    return this.repo.search$(query);
+  public search$(query: string): Observable<SearchResult[]> {
+    return this.repo.search$(query)
+      .pipe(
+        map((items) => items.map(
+          (item) => ({id: item.id, type: 'user', name: item.name, code: item.personId})),
+        ),
+      );
   }
 }

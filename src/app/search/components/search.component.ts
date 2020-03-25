@@ -1,24 +1,69 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { SearchService } from '../../services/search/search.service';
+import { take } from 'rxjs/operators';
+import { SearchItemType, SearchResult } from '../../models/search-result';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css']
+  styleUrls: ['./search.component.css'],
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
 
-  public hasResults = false;
+  public searchQuery = '';
+  public items: Array<SearchResult> = [];
+  public loading = false;
+  public loaded = false;
+  public error: string;
 
-  constructor() { }
+  private subscription: Subscription;
 
-  ngOnInit() {
+  constructor(private search: SearchService) {
   }
 
-  executeSearch() {
-    this.hasResults = true;
+  ngOnInit() {}
+
+  executeSearch($event: Event) {
+    $event.preventDefault();
+
+    this.loading = true;
+    this.error = null;
+
+    this.unsubscribe();
+
+    this.subscription = this.search.search$(this.searchQuery)
+      .pipe(take(1))
+      .subscribe(response => {
+        this.items = response;
+        this.loading = false;
+        this.loaded = true;
+      }, error => {
+        this.error = error;
+        this.loading = false;
+        this.loaded = true;
+      });
   }
 
   clearSearch() {
-    this.hasResults = false;
+    this.items = [];
+  }
+
+  trackByFn(item, index) {
+    return item.id;
+  }
+
+  typeVisual(type: SearchItemType) {
+    return this.search.typeVisual(type);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe();
+  }
+
+  private unsubscribe(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 }

@@ -1,16 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Merchant } from 'src/app/models/merchant';
 import { MerchantRepository } from '@search-app/data';
+import { map } from 'rxjs/operators';
+import { SearchResult } from '../../models/search-result';
+import { SearchServiceInterface } from '../../interfaces/search-service.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class MerchantService {
+export class MerchantService implements SearchServiceInterface {
 
-  constructor(private repo: MerchantRepository) { }
+  constructor(private repo: MerchantRepository) {
+  }
 
-  search$(query: string): Observable<Merchant[]> {
-    return this.repo.search$(query);
+  public search$(query: string): Observable<SearchResult[]> {
+    return this.repo.search$(query)
+      .pipe(
+        map((items) => items.map(
+          (item) => ({id: item.id, type: 'merchant', name: item.name, code: item.vat})),
+        ),
+      );
   }
 }

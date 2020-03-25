@@ -4,8 +4,6 @@ import { ModuleWithProviders } from '@angular/compiler/src/core';
 import { MerchantService } from './merchant/merchant.service';
 import { UserService } from './user/user.service';
 
-
-
 @NgModule({
   declarations: [],
   imports: [
