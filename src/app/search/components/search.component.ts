@@ -3,6 +3,8 @@ import { Subscription } from 'rxjs';
 import { SearchService } from '../../services/search/search.service';
 import { take } from 'rxjs/operators';
 import { SearchItemType, SearchResult } from '../../models/search-result';
+import { CsvService } from '../../services/csv/csv.service';
+import { dateYmd } from '../../../utils/date-formatter';
 
 @Component({
   selector: 'app-search',
@@ -19,8 +21,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   private subscription: Subscription;
 
-  constructor(private search: SearchService) {
-  }
+  constructor(private search: SearchService, private csv: CsvService) {}
 
   ngOnInit() {}
 
@@ -47,6 +48,14 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   clearSearch() {
     this.items = [];
+  }
+
+  saveSearch() {
+    this.csv.download<SearchResult>(
+      `${this.searchQuery}-${dateYmd(new Date())}`,
+      { type: 'Type', name: 'Name', code: 'Identifier' },
+      this.items,
+    );
   }
 
   trackByFn(item, index) {
